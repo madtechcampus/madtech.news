@@ -1,0 +1,65 @@
+<div class="box wide">
+  <p>
+  Para ocultar de todo el sitio las historias con ciertas <a href="/tags">etiquetas</a>, márcalas abajo.
+  </p>
+
+  <% if @user %>
+    <p>
+    Para aplicar tus filtros en tu lector de feeds, usa una URL RSS que incluya tu `rss_token`.
+    Tienes <%= link_to "todas las historias", user_token_link(rss_url) %> y
+    <%= link_to "todos los comentarios", user_token_link(comments_url(format: :rss)) %>,
+    y aparecen más URLs de feeds en las etiquetas <code>&lt;head&gt;</code> de la página para tu navegador.
+    </p>
+  <% else %>
+    <p>
+    Como no has iniciado sesión, tus filtros se guardarán en una cookie del
+    navegador de larga duración. Para guardar tus filtros de etiquetas de forma
+    permanente y que funcionen en todos los navegadores, <a href="/login">inicia sesión</a> en tu cuenta.
+    </p>
+  <% end %>
+
+  <%= form_with url: '/filters', method: :post do |f| %>
+    <table class="data zebra" cellspacing=0>
+    <tr>
+      <th>Ocultar</th>
+      <th>Etiqueta</th>
+      <th>Descripción</th>
+      <th style="text-align: right;">Historias</th>
+      <th style="text-align: right; padding-right: 1em;">Filtrando</th>
+    </tr>
+    <% @categories.each do |category| %>
+      <tr>
+        <th></th>
+        <th colspan=4><%= category.category %></th>
+      </tr>
+      <% category.tags.each do |tag| %>
+        <tr id="<%= tag.tag %>">
+          <td>
+            <% if tag.user_can_filter?(@user) %>
+              <%= check_box_tag "tags[#{tag.tag}]", tag.tag, @filtered_tags.include?(tag.id) %>
+            <% end %>
+          </td>
+          <td><%= tag_link(tag) %></td>
+          <td>
+            <%= label_tag "tags[#{tag.tag}]" do %>
+              <span class="<%= tag.active? ? '' : 'inactive_tag' %>"><%= tag.description %></span>
+              <% if !tag.active %>
+                | <em>inactiva</em>
+              <% end %>
+              <% if tag.hotness_mod != 0 %>
+                |
+                <em>mod. de relevancia <%= tag.hotness_mod > 0 ? "+" : ""%><%= tag.hotness_mod %></em>
+              <% end %>
+            <% end %>
+          </td>
+          <td style="text-align: right;"><%= number_with_delimiter(@story_counts[tag.id]) %></td>
+          <td style="text-align: right; padding-right: 1em;"><%= number_with_delimiter(@filter_counts[tag.id]) %></td>
+        </tr>
+      <% end %>
+    <% end %>
+    </table>
+    <p>
+    <%= f.submit "Guardar filtros" %>
+    </p>
+  <% end %>
+</div>

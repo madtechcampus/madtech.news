@@ -1,0 +1,7 @@
+<%# locals: () -%>
+<% content_for :subnav do %>
+  <%= link_to_different_page 'Guardados', saved_path %>
+  <%= link_to_different_page 'Historias votadas', upvoted_stories_path %>
+  <%= link_to_different_page 'Comentarios votados', upvoted_comments_path %>
+  <%= link_to_different_page 'Ocultos', hidden_path %>
+<% end %>

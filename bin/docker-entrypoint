@@ -1,0 +1,11 @@
+#!/bin/bash -e
+
+# MadTech News container entrypoint.
+# Only the web (puma) container prepares the database, so the worker container
+# never races it on migrations.
+if [[ "$*" == *"puma"* ]]; then
+  echo "==> Preparing database (db:prepare)..."
+  ./bin/rails db:prepare
+fi
+
+exec "$@"

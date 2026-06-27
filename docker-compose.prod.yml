@@ -1,0 +1,91 @@
+# Production stack for MadTech News on a single Hetzner VPS.
+#
+#   cp .env.sample .env            # then edit secrets + domain
+#   docker compose -f docker-compose.prod.yml up -d --build
+#
+# Services: Caddy (TLS reverse proxy) -> app (Puma) + worker (Solid Queue) -> db (MariaDB).
+
+services:
+  db:
+    image: mariadb:11
+    restart: unless-stopped
+    environment:
+      MARIADB_DATABASE: ${DATABASE_NAME:-madtech}
+      MARIADB_USER: ${DATABASE_USER:-madtech}
+      MARIADB_PASSWORD: ${DATABASE_PASSWORD:?set DATABASE_PASSWORD in .env}
+      MARIADB_ROOT_PASSWORD: ${DATABASE_ROOT_PASSWORD:?set DATABASE_ROOT_PASSWORD in .env}
+    volumes:
+      - db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    # Not published to the host; only reachable on the internal network.
+
+  app:
+    build:
+      context: .
+      args:
+        RUBY_VERSION: "4.0.0"
+    image: madtech-news:latest
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      RAILS_ENV: production
+      DATABASE_HOST: db
+      RAILS_SERVE_STATIC_FILES: "true"
+      RAILS_LOG_TO_STDOUT: "true"
+      # puma.rb hardcodes lobsters' prod pidfile path; override to a writable one.
+      PIDFILE: /app/tmp/puma.pid
+    volumes:
+      - app_storage:/app/storage      # SQLite cache/queue + Active Storage uploads
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      # force_ssl returns a 301 over http; curl -f treats <400 as success, so this
+      # confirms Puma is serving without needing a DB round-trip.
+      test: ["CMD", "curl", "-fsS", "-o", "/dev/null", "http://127.0.0.1:3000/"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
+
+  worker:
+    image: madtech-news:latest
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      RAILS_ENV: production
+      DATABASE_HOST: db
+      RAILS_LOG_TO_STDOUT: "true"
+    command: ["bundle", "exec", "bin/jobs"]
+    volumes:
+      - app_storage:/app/storage
+    depends_on:
+      app:
+        condition: service_healthy
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      SITE_DOMAIN: ${SITE_DOMAIN:-madtech.news}
+      TLS_EMAIL: ${TLS_EMAIL:-admin@madtech.news}
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      app:
+        condition: service_healthy
+
+volumes:
+  db_data:
+  app_storage:
+  caddy_data:
+  caddy_config:

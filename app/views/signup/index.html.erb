@@ -1,0 +1,18 @@
+<div class="box wide">
+  <% if Rails.application.open_signups? %>
+    <p>
+      ¿Todavía no tienes cuenta? <a href="/invitations/open">Regístrate aquí</a>.
+    </p>
+  <% else %>
+    <p>
+    Por ahora el registro es solo por invitación para combatir el spam y aumentar
+    la responsabilidad.  Si conoces a <%= link_to 'un usuario actual', users_tree_path %>
+    del sitio, pídele una invitación, o
+    <% if Rails.application.allow_invitation_requests? %>
+      <a href="/invitations/request">solicita una públicamente</a>.
+    <% else %>
+      solicita una en el <a href="/chat">chat</a>.
+    <% end %>
+    </p>
+  <% end %>
+</div>

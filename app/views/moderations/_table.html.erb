@@ -1,0 +1,54 @@
+<%# locals: (moderations:) -%>
+<table class="data zebra moderations" width="100%" cellspacing=0>
+<tr>
+  <th>Fecha/Hora</th>
+  <th>Moderador/a</th>
+  <th>Objeto, acción, motivo</th>
+</tr>
+<% moderations.each do |mod| %>
+  <tr class="nobottom <%= mod.moderator && 'mod' %>">
+    <td>
+      <%= mod.created_at.strftime("%Y-%m-%d %H:%M") %></td>
+    <td>
+      <% if mod.moderator %>
+        <%= link_to(mod.moderator.username, user_path(mod.moderator)) %>
+      <% elsif mod.is_from_suggestions? %>
+        <em>(Usuarios)</em>
+      <% end %></td>
+    <td><% if mod.story %>
+        <a href="<%= Routes.title_path mod.story %>">Historia: <%= mod.story.title %></a>
+      <% elsif mod.comment %>
+        <a href="<%= Routes.comment_target_path(mod.comment) %>">Comentario de
+          <%= mod.comment.user.username %>
+          en
+          <%= mod.comment.story.title %></a>
+      <% elsif mod.tag %>
+        <%= link_to("Etiqueta: #{mod.tag.tag}", mod.tag) %>
+      <% elsif mod.category %>
+        <%= link_to("Categoría: #{mod.category.category}", mod.category) %>
+      <% elsif mod.user_id %>
+        <% if mod.user %>
+          <%= link_to "Usuario #{mod.user.username}", mod.user %>
+        <% else %>
+          Usuario <%= mod.user_id %> (Borrado)
+        <% end %>
+      <% elsif mod.domain %>
+        Dominio <%= link_to mod.domain.domain, domain_path(mod.domain) %>
+      <% elsif mod.origin %>
+        Origen <%= link_to mod.origin.identifier, origin_path(mod.origin) %>
+      <% else %>
+        Objeto moderado desconocido
+      <% end %></td>
+  </tr>
+  <tr class="<%= mod.reason.present?? "nobottom" : "" %>">
+    <td colspan=2></td>
+    <td class="wrap">Acción: <em><%= mod.action %></em></td>
+  </tr>
+  <% if mod.reason.present? %>
+    <tr>
+      <td colspan=2></td>
+      <td>Motivo: <em><%= mod.reason %></em></td>
+    </tr>
+  <% end %>
+<% end %>
+</table>

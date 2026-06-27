@@ -1,0 +1,28 @@
+<%# locals: (similar:) -%>
+<ol class="similar">
+  <% similar.each do |story| %>
+    <li>
+      <a href="<%= story.url %>" target="_blank"><%= story.title %></a>
+      <% if story.merged_story_id %>
+        (fusionada con <a href="<%= story.merged_into_story.url %>" target="_blank"><%= story.merged_into_story.title %></a>)
+      <% end %>
+      <%= story.user_is_author? ? "escrito por" : "vía" %>
+      <%= styled_user_link story.user, story %>
+      <%= how_long_ago_label(story.created_at) %>
+      <span>
+        <%= divider_tag %>
+        <%= story.show_score_to_user?(@user) ? "#{story.score} #{story.score == 1 ? 'punto' : 'puntos'}" : '~' %>
+      </span>
+      <span class="comments_label">
+        <%= divider_tag %>
+        <a href="<%= Routes.title_path story %>">
+          <% if story.comments_count == 0 %>
+            sin comentarios
+          <% else %>
+            <%= story.comments_count %> <%= story.comments_count == 1 ? 'comentario' : 'comentarios' %>
+          <% end %>
+        </a>
+      </span>
+    </li>
+  <% end %>
+</ol>

@@ -1,0 +1,51 @@
+<%# locals: (story:, f: nil, linking_comments: [], suggesting: false) -%>
+<div>
+  <div class="form_errors_header">
+    <% if story.errors.any? %>
+      <%= errors_for story %>
+    <% end %>
+    <% if story.is_resubmit? && !suggesting %>
+      <div class="flash-notice">
+        <p>
+          Esta publicación ya se ha enviado antes. Puedes volver a enviarla con un comentario para iniciar una nueva discusión.
+        </p>
+
+        <%= render partial: "stories/similar", locals: { similar: story.similar_stories } %>
+      </div>
+
+      <div>
+        <div class="d">
+          <strong>¿Qué ha cambiado o justifica una nueva discusión?</strong><br>
+          (No basta con que te parezca que sigue siendo interesante o que la hayas leído por primera vez.)
+          <br><br>
+        </div>
+
+        <%= label_tag :comment, "Comentario" %>
+        <%= text_area_tag "comment", @comment&.comment, :rows => 5 %>
+        <br><br>
+      </div>
+    <% elsif story.similar_stories.any? && !suggesting %>
+      <p>Discusiones anteriores sobre esta publicación:</p>
+      <%= render partial: "stories/similar", locals: { similar: story.similar_stories } %>
+    <% elsif linking_comments.any? %>
+      <div class="flash-notice">
+        <p>
+        Este enlace ha aparecido recientemente en los comentarios:
+        </p>
+        <ul>
+          <% linking_comments.each do |link| %>
+            <li>
+              Comentario <%= link_to link.from_comment.short_id, Routes.comment_target_path(link.from_comment) %>
+              <%= time_ago_in_words link.from_comment.last_edited_at %>:
+              <%= raw excerpt_fragment_around_link(link.from_comment.markeddown_comment, story.url) %>
+            </li>
+          <% end %>
+        </ul>
+        <p>
+          Por favor, amplía la discusión existente en lugar de dividirla.
+          Añadir un comentario la subirá al principio de <%= link_to "Publicaciones activas", active_path %>.
+        </p>
+      </div>
+    <% end %>
+  </div>
+</div>

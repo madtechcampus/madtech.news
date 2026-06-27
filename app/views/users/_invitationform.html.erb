@@ -1,0 +1,30 @@
+<%# locals: (return_home: false) -%>
+<p>
+Las invitaciones son ilimitadas, pero las personas a las que invites quedarán asociadas a tu cuenta
+en el <%= link_to 'árbol de usuarios', users_tree_path %>
+y puede que seas responsable de ellas si causan problemas.
+Usa tu criterio al invitar a personas que no conozcas personalmente.
+</p>
+
+<p>
+Nota para usuarios trans:
+Los perfiles de usuario muestran quién los invitó.
+Si quieres evitar conectar tu usuario antiguo con el nuevo, pídele a <%= link_to 'un moderador', moderators_path %> que te envíe una invitación.
+</p>
+
+<%= form_with url: invitations_path, method: :post do |f| %>
+  <% if return_home %>
+    <%= f.hidden_field :return_home, value: 1 %>
+  <% end %>
+
+  <div class="labelled_grid">
+    <%= f.label :email, "Correo electrónico" %>
+    <%= f.email_field :email, autocomplete: "off", inputmode: "email", required: true, autocapitalize: :off %>
+
+    <%= f.label :memo, "Nota para el usuario" %>
+    <%= f.text_field :memo %>
+  </div>
+
+  <%= f.submit "Enviar invitación" %>
+<% end %>
+

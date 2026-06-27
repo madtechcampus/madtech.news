@@ -1,0 +1,11 @@
+<% content_for :title, "Nuevo correo de moderación" %>
+
+<h1>Nuevo correo de moderación</h1>
+
+<%= render "form", mod_mail: @mod_mail %>
+
+<br>
+
+<div>
+  <%= link_to "Volver a los correos de moderación", mod_mod_mails_path %>
+</div>

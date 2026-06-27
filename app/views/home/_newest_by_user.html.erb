@@ -1,0 +1,7 @@
+<%# locals: (newest_by_user:) -%>
+<% render partial: 'stories/subnav' %>
+
+<p>
+  Enlaces más recientes enviados por
+  <%= link_to newest_by_user.username, user_path(newest_by_user) %>.
+</p>

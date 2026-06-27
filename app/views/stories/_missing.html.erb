@@ -1,0 +1,19 @@
+<%# locals: (story:, moderation: nil) -%>
+<div class="box"><p>
+  <% if story.is_moderated? %>
+    <% if !@user %>
+      Un moderador eliminó la publicación.
+    <% elsif moderation %>
+      Publicación eliminada por un moderador: <%= moderation.reason %>
+    <% else %>
+      Un moderador eliminó la publicación, pero no se encontró ningún mensaje en el registro.
+      Por favor, reporta este error.
+    <% end %>
+
+    <p>
+      (Los visitantes sin sesión iniciada solo ven "La publicación fue eliminada" porque no queremos dar a los troles un cómodo monumento público a un contenido tan malo o extraño que tuvimos que eliminar.)
+    </p>
+  <% else %>
+    La publicación fue eliminada por quien la envió<% if @user %> <%= link_to story.user.username, user_path(story.user) %><% end %>.
+  <% end %>
+</p></div>

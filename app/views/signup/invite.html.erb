@@ -1,0 +1,12 @@
+<p>
+Ahora que eres miembro puedes invitar a las personas que creas que encajarían bien.
+Tienes esta opción disponible en cualquier momento desde <a href="/settings#invite">tu página de ajustes</a>.
+</p>
+
+<%= render :partial => "users/invitationform", :locals => { :return_home => true } %>
+
+<p>o</p>
+
+<p>
+<%= button_to "Omitir", "/", :method => :get %>
+</p>

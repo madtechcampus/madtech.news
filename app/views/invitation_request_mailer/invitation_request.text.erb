@@ -1,0 +1,15 @@
+Hola <%= @invitation_request.email %>:
+
+Alguien desde <%= @invitation_request.ip_address %> ha enviado una solicitud de invitación a
+<%= Rails.application.name %>.
+
+  Nombre: <%= @invitation_request.name %>
+  Correo: <%= @invitation_request.email %> (no se mostrará a otros usuarios)
+  Nota: <%= @invitation_request.memo %>
+
+Si has sido tú, visita la siguiente URL para confirmar tu solicitud y
+mostrarla a otros usuarios registrados.
+
+  <%= Rails.application.root_url %>invitations/confirm/<%= @invitation_request.code %>
+
+Si no has sido tú, puedes eliminar este mensaje.

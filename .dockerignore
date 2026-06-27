@@ -1,0 +1,32 @@
+.git
+.github
+.gitignore
+.devcontainer
+README.md
+DEPLOY.md
+CONTRIBUTING.md
+
+# Local config & secrets — never bake into the image
+.env
+.env.*
+config/master.key
+config/credentials/*.key
+config/database.yml
+config/initializers/development.rb
+config/initializers/production.rb
+
+# Ephemeral / generated
+log/*
+tmp/*
+storage/*
+public/cache
+public/assets
+public/packs
+node_modules
+
+# Test & dev
+spec
+test
+fixtures
+coverage
+*.sqlite3

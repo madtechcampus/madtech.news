@@ -1,0 +1,16 @@
+<%# locals: (tags:) -%>
+<div class="box">
+  Enlaces <a href="/tags">etiquetados</a> como<br>
+
+  <% tags.each do |tag| %>
+    <%= tag_link(tag) %>
+    <%= tag.description %>
+    <br>
+  <% end %>
+
+  <% if (matched_filtered_tags = tags & filtered_tags).any? %>
+    Has <%= link_to "filtrado", filters_path %> <%= matched_filtered_tags.count > 1 ? "algunas" : "una" %> de estas etiquetas.
+    Los enlaces etiquetados y sus comentarios no se te mostrarán en otras partes del sitio.
+  <% end %>
+</div>
+

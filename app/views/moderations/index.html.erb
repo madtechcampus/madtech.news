@@ -1,0 +1,33 @@
+<div class="box wide">
+  <%= form_with url: moderations_path, method: :get do |f| %>
+    <label class="normal" for="moderator">Moderador/a</label>
+    <%= f.select 'moderator', options_for_select(@moderators, @moderator) %>
+    <% @what.each do |type, checked| %>
+      <%= check_box_tag "what[#{type}]", type, checked %>
+      <label class="normal" for="what_<%= type %>"><%= type.to_s.titlecase %></label>
+    <% end %>
+
+    <input type="submit" value="Filtrar">
+  <% end %><br>
+
+  <%= render partial: 'table', locals: { moderations: @moderations } %>
+</div>
+
+<% if @moderations.map(&:token).intersect? Moderation::BAD_DOFFING_ENTRIES  %>
+  <p>
+    Esta tabla incluye 1 o más entradas en las que un usuario que se quitó un sombrero aparecía <a href="https://github.com/lobsters/lobsters/issues/1591">listado por error como moderador</a>.
+    No queremos editar ni borrar del registro de moderación, así que hemos anotado esta vista para explicar los datos incorrectos.
+  </p>
+<% end %>
+
+<nav class="morelink">
+  <% if @page > 1 %>
+    <%= link_to "Página #{@page - 1}", @moderation_params.merge({:page => @page - 1}), rel: "prev" %>
+  <% end %>
+  <% if @pages > 1 && @page < @pages %>
+    <% if @page > 1 %>
+      <%= divider_tag %>
+    <% end %>
+    <%= link_to "Página #{@page + 1}", @moderation_params.merge({:page => @page + 1}), rel: "next"%>
+  <% end %>
+</nav>

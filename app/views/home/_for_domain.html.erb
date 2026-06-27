@@ -1,0 +1,23 @@
+<%# locals: (domain:, stories:) -%>
+<p>
+  <%= domain.domain %>:
+  <%= "#{number_with_delimiter domain.stories_count} #{domain.stories_count == 1 ? "enlace" : "enlaces"}" %> de
+  <%= "#{number_with_delimiter domain.n_submitters} #{domain.n_submitters == 1 ? "usuario" : "usuarios"}" %>
+  <% if domain.origins.count > 0 %>
+    con <%= link_to "#{number_with_delimiter domain.origins.count} #{domain.origins.count == 1 ? "origen" : "orígenes"}", domain_origins_path(domain) %>
+  <% end %>
+
+  <%= link_to 'Editar', edit_mod_domain_path(domain) if @user&.is_moderator?  %>
+</p>
+
+<% if domain.banned? %>
+  <p>
+    Baneado
+    <%= how_long_ago_label(domain.banned_at) %>
+    <% if domain.banned_by_user %>
+      por <%= link_to domain.banned_by_user.try(:username), domain.banned_by_user %>:
+      <em><%= domain.banned_reason %></em>
+    <% end %>
+  </p>
+<% end %>
+

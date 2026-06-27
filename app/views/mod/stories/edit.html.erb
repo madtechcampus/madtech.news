@@ -1,0 +1,53 @@
+<div class="box" id="story_box">
+  <div id="story_holder">
+    <%= form_with model: [:mod, @story] do |f| %>
+      <%= render :partial => "stories/form", :locals => { :story => @story, :f => f } %>
+
+      <br />
+      <div class="box">
+        <div class="boxline">
+          <%= f.label :merge_story_short_id, "Fusionar con" %>
+          <%= f.text_field :merge_story_short_id, autocomplete: "off",
+            placeholder: "Short id de la historia con la que se " <<
+            "fusionará esta historia" %>
+        </div>
+        <div class="boxline">
+          <%= f.label :unavailable_at, "No disponible" %>
+          <%= f.check_box :is_unavailable %>
+          <%= f.label :unavailable_at, "La URL de origen no está disponible, " <<
+            "habilitar la visualización del texto en caché", :class => "normal" %>
+        </div>
+        <div class="boxline">
+          <%= f.label :moderation_reason, "Motivo de moderación" %>
+          <%= f.text_field :moderation_reason, required: true %>
+        </div>
+      </div>
+
+      <p></p>
+
+      <div class="box">
+        <div class="boxline actions">
+          <%= f.submit "Guardar" %>
+
+          <% if @story.is_gone? %>
+            &nbsp; | &nbsp;
+            <%= f.submit "Restaurar", formaction: mod_story_undelete_path(@story.short_id), :data => { :confirm => "¿Restaurar esta historia?" } %>
+          <% elsif !@story.is_gone? %>
+            &nbsp; | &nbsp;
+            <% if @story.user_id != @user.id %>
+              <%= f.submit "Borrar (mod)", formaction: mod_story_destroy_path(@story.short_id),
+                :class => "deletion", :data => { :confirm => "¿Borrar esta historia?" }  %>
+            <% else %>
+              <%= f.submit "Borrar", formaction: mod_story_destroy_path(@story.short_id),
+                :class => "deletion", :data => { :confirm => "¿Borrar esta historia?" } %>
+            <% end %>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<br />
+<label>Último registro de moderación de esta historia, su autor y la discusión</label>
+<%= render partial: 'moderations/table', locals: { moderations: Moderation.for_story(@story) } %>

@@ -1,0 +1,22 @@
+<div class="inside">
+  <h1>IPs bloqueadas</h1>
+
+  <p>
+  <%= Rails.application.name %> se ha visto obligado a bloquear algunas IPs y rangos para evitar la sobrecarga provocada por bots agresivos que usan miles de IPs para eludir los límites de peticiones.
+  No intentamos bloquear VPNs, pero si tu VPN también la usan bots claramente abusivos, podría acabar bloqueada.
+  <%= Rails.application.name %> <a href="/about#transparency">no usa el bloqueo de IPs para bloquear usuarios</a>; todos los bloqueos de usuarios aparecen en <a href="/moderations">el registro de moderación</a>.
+  </p>
+
+  <ul>
+    <% @drops.each do |drop| %>
+      <li>
+        <%= drop[0] %>
+        <% if drop[1] %>
+          <%= drop[1].delete_prefix('"').delete_suffix('"') %>
+        <% else %>
+          No se ha registrado ningún comentario.
+        <% end %>
+      </li>
+    <% end %>
+  </ul>
+</div>

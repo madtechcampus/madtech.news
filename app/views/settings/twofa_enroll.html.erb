@@ -1,0 +1,29 @@
+<% content_for :subnav do %>
+  <a href="/settings">Volver a los ajustes</a>
+<% end %>
+
+<p>
+Escanea el código QR de abajo o haz clic en él para abrirlo en la <a
+href="https://en.wikipedia.org/wiki/Time-based_One-time_Password_Algorithm"
+target="_blank">aplicación TOTP</a> que prefieras:
+</p>
+
+<div id="qrsvg">
+  <%= raw @qr_svg %>
+</div>
+
+<p>
+  O, para añadirlo manualmente a un dispositivo, introduce el secreto:
+  <details>
+    <summary>Mostrar secreto</summary>
+    <%= raw @qr_secret %>
+  </details>
+</p>
+
+<p>
+Una vez que hayas terminado de registrarlo en tu aplicación TOTP, continúa a
+la siguiente pantalla para verificar tu código TOTP actual y activar
+de verdad la autenticación de doble factor en tu cuenta.
+</p>
+
+<%= button_to "Verificar y activar", twofa_verify_url, :method => :get %>

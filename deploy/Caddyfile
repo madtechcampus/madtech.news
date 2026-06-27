@@ -1,0 +1,29 @@
+# Caddy reverse proxy for MadTech News.
+# Domain and ACME email come from the environment (set in .env.production /
+# docker-compose.prod.yml). Caddy obtains and renews Let's Encrypt TLS certs
+# automatically once the domain's DNS A/AAAA records point at this server.
+
+{
+	email {$TLS_EMAIL}
+}
+
+{$SITE_DOMAIN} {
+	encode zstd gzip
+
+	# Static assets precompiled by Rails are served by Puma (RAILS_SERVE_STATIC_FILES).
+	reverse_proxy app:3000 {
+		header_up X-Forwarded-Proto https
+	}
+
+	# Reasonable security headers (HSTS is also set by Rails force_ssl).
+	header {
+		Referrer-Policy "strict-origin-when-cross-origin"
+		X-Content-Type-Options "nosniff"
+		-Server
+	}
+}
+
+# Optional: redirect www to the apex. Uncomment if you add a www DNS record.
+# www.{$SITE_DOMAIN} {
+# 	redir https://{$SITE_DOMAIN}{uri} permanent
+# }

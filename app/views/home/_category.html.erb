@@ -1,0 +1,10 @@
+<%# locals: (categories:) -%>
+<div class="box">
+  Enlaces con <a href="/tags">etiquetas</a> de <%= categories.length == 1 ? "la" : "las" %>
+  <% categories.each do |c| %>
+    <%= link_to c.category, category_path(c) %>
+  <% end %>
+  <%= categories.length == 1 ? "categoría" : "categorías" %>
+
+  <%= render(partial: 'categories/multi_category_tip') if categories.length == 1 %>
+</div>

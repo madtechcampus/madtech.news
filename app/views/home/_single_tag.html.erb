@@ -1,0 +1,33 @@
+<%# locals: (tag:, related:) -%>
+<div class="box">
+  <p>
+    Enlaces <a href="/tags#<%= tag.tag %>">etiquetados</a> como
+    <%= tag_link(tag) %>
+    <%= tag.description %>
+    <br>
+    <% if tag.hotness_mod != 0.0 %>
+      Modificador de relevancia <%= tag.hotness_mod %>
+      (<%= tag.hotness_mod > 0 ? 'sube' : 'baja' %> el rango de un enlace).
+    <% end %>
+    <% if tag.privileged %>
+      Solo los moderadores pueden usar esta etiqueta.
+    <% elsif !tag.permit_by_new_users %>
+      Esta etiqueta <a href="/about#new-user-tags">no está permitida</a> en los enlaces enviados por usuarios nuevos.
+    <% end %>
+  </p>
+
+  <% if filtered_tags.include? tag %>
+    Has <%= link_to "filtrado", filters_path %> esta etiqueta.
+    Los enlaces etiquetados y sus comentarios no se te mostrarán en otras partes del sitio.
+  <% end %>
+
+
+  <% if related.length > 0 %>
+    <p>
+      Lo más habitual es que también se etiquete con
+      <% related.each do |tag| %>
+        <%= tag_link(tag) %>
+      <% end %>
+    </p>
+  <% end %>
+</div>

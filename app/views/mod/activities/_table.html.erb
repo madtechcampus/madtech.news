@@ -1,0 +1,113 @@
+<%# locals: (mod_activities:) -%>
+
+<% cache [mod_activities.first, @user.id] do %>
+  <ul class="mod_activities">
+    <% mod_activities.each do |ma| %>
+      <% cache [ma, ma.item, @user] do %>
+        <% case ma.item %>
+        <% when Moderation %>
+          <li class="moderation">
+            <div class="byline">
+              Registro público
+
+              <%= how_long_ago_label ma.created_at %>
+
+              <% if ma.item.moderator %>
+                <%= inline_avatar_for @user, ma.item.moderator %>
+                <%= link_to(ma.item.moderator.username, user_path(ma.item.moderator)) %>
+              <% elsif ma.item.is_from_suggestions? %>
+                <em>(Usuarios)</em>
+              <% else %>
+                <em>Sistema</em>
+              <% end %>
+              |
+
+              <span class="target">
+                <% if ma.item.story %>
+                  <a href="<%= Routes.title_path ma.item.story %>">Historia: <%= ma.item.story.title %></a>
+                <% elsif ma.item.comment %>
+                  <a href="<%= Routes.comment_target_path(ma.item.comment) %>">Comentario de
+                    <%= ma.item.comment.user.username %>
+                    en
+                    <%= ma.item.comment.story.title %></a>
+                <% elsif ma.item.user_id %>
+                  <% if ma.item.user %>
+                    <%= link_to "Usuario #{ma.item.user.username}", ma.item.user %>
+                  <% else %>
+                    Usuario <%= ma.item.user_id %> (Borrado)
+                  <% end %>
+                <% elsif ma.item.tag %>
+                  <%= link_to("Etiqueta: #{ma.item.tag.tag}", ma.item.tag) %>
+                <% elsif ma.item.category %>
+                  <%= link_to("Categoría: #{ma.item.category.category}", ma.item.category) %>
+                <% elsif ma.item.domain %>
+                  Dominio <%= link_to ma.item.domain.domain,  domain_path(ma.item.domain) %>
+                <% elsif ma.item.origin %>
+                  Origen <%= link_to ma.item.origin.identifier,  origin_path(ma.item.origin) %>
+                <% else %>
+                  Objeto moderado desconocido
+                <% end %>
+              </span>
+            </div>
+
+            <p>
+              Acción: <%= ma.item.action %>
+              <% if ma.item.reason %>
+                <br>
+                Motivo: <%= ma.item.reason %>
+              <% end %>
+
+              <% if ma.item.story %>
+                <ul>
+                <%= render :partial => "stories/listdetail", locals: { story: ma.item.story } %>
+                </ul>
+              <% elsif ma.item.comment %>
+                <%= render :partial => "comments/comment", locals: {
+                  comment: ma.item.comment,
+                  show_story: false,
+                  show_folder_control: false,
+                  show_tree_lines: false,
+                  force_open: true
+                } %>
+              <% end %>
+
+            </p>
+          </li>
+
+        <% when ModNote %>
+          <li class="mod_note">
+            <div class="byline">
+              Nota
+              <%= inline_avatar_for @user, ma.item.moderator %>
+              <%= link_to ma.item.user.username, ma.item.user %>
+
+              <%= how_long_ago_label ma.item.created_at %>
+
+              <% if ma.item.moderator != InactiveUser.inactive_user %>
+                <%= inline_avatar_for @user, ma.item.moderator %>
+                <%= ma.item.moderator.username %>
+              <% end %>
+            </div>
+
+            <%= raw ma.item.markeddown_note %>
+          </li>
+
+        <% when ModMail %>
+          <li class="mod_mail">
+            <div class="byline">
+              Correo
+              <%= how_long_ago_label ma.item.created_at %> |
+              <%= link_to ma.item.subject, ma.item %>
+              (<%= pluralize ma.item.mod_mail_messages.count, 'mensaje', plural: 'mensajes' %>)
+              <div>Destinatarios:
+                <% ma.item.recipients.each do |recipient| %>
+                  <%= inline_avatar_for @user, recipient %><%= link_to recipient.username, recipient %>
+                <% end %>
+              </div>
+            </div>
+          </li>
+        <% end %>
+      <% end %>
+    <% end %>
+  </ul>
+<% end %>

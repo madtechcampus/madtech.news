@@ -1,0 +1,21 @@
+<% content_for :subnav do %>
+  <a href="/settings">Volver a los ajustes</a>
+<% end %>
+
+<%= form_with url: "/settings/mastodon_auth", method: :get do |f| %>
+  <p>
+  Introduce el nombre o la URL de tu instancia de Mastodon (por ejemplo, mastodon.social):
+  </p>
+
+  <div class="labelled_grid">
+    <%= f.label :mastodon_instance_name, "Nombre o URL" %>
+    <%= f.text_field :mastodon_instance_name, required: true, autofocus: true, autocapitalize: :off %>
+  </div>
+  <%= f.submit "Continuar" %>
+
+  <p class="help">
+    Solicitamos el ámbito
+    <a href="https://docs.joinmastodon.org/api/oauth-scopes/#read"><tt>read:accounts</tt></a> para confirmar tu usuario,
+      que incluye <a href="https://docs.joinmastodon.org/methods/accounts/#get">información básica del perfil</a>.
+  </p>
+<% end %>

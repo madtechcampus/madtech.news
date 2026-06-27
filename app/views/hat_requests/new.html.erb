@@ -1,0 +1,40 @@
+<p>
+Un distintivo es una forma formal y verificada de hablar oficialmente en nombre de un proyecto, organización o empresa en <%= Rails.application.name %>.
+Un usuario puede tener más de un distintivo, pero solo puede llevar uno a la vez en un comentario o mensaje privado.
+</p>
+<p>
+Los distintivos sirven para hacer declaraciones públicas, no para conmemorar contribuciones a un proyecto ni puestos ocupados.
+Solicita uno solo si vas a actuar oficialmente aquí, por ejemplo si eres desarrollador principal de un proyecto o empleado de una empresa autorizado para publicar en nombre de tu organización.
+Los distintivos suelen reservarse para proyectos y organizaciones destacados.
+</p>
+<p>
+Para solicitar un distintivo para tu cuenta, indica una breve descripción del distintivo
+(p. ej., "Desarrollador de OpenBSD"), un enlace público que se mostrará al pasar el cursor
+sobre el distintivo y que los usuarios podrán ver, como tu dirección de correo en ese proyecto
+o empresa, o un enlace a la web de la empresa que acredite tu empleo, y
+comentarios privados que solo verán los moderadores durante la aprobación.
+</p>
+<p>
+Es de gran ayuda que <b>vincules tu cuenta de GitHub</b> desde tus <%= link_to 'ajustes', settings_path(anchor: 'external') %>
+y que, en tu comentario de abajo, enlaces al sitio donde la organización menciona esa cuenta.
+Así podemos comprobar al instante que eres legítimo sin tener que enviar un correo de verificación.
+</p>
+<p>
+Cuando ya no puedas hablar en nombre de un proyecto o empresa, contacta con un moderador para retirar tu distintivo.
+Los mensajes antiguos seguirán mostrándolo y no podrás volver a usarlo.
+</p>
+
+<%= form_with model: @hat_request, url: hat_requests_path do |f| %>
+  <div class="labelled_grid">
+    <%= f.label :hat, "Distintivo" %>
+    <%= f.text_field :hat, :placeholder => "Miembro del proyecto XYZ" %>
+
+    <%= f.label :link, "Enlace" %>
+    <%= f.text_field :link, :placeholder => "usuario@proyecto.org, o una URL a una página que acredite tu empleo", autocapitalize: :off %>
+
+    <%= f.label :comment, "Comentario" %>
+    <%= f.text_area :comment, :placeholder => "Solo se mostrará a los moderadores durante la aprobación. Enlaza a discusiones donde este distintivo sería útil para hablar en nombre de tu proyecto." %>
+  </div>
+
+  <%= submit_tag "Solicitar distintivo" %>
+<% end %>

@@ -1,0 +1,31 @@
+<p>
+Si no conoces (o no encuentras) a ningún <%= link_to 'usuario existente', users_tree_path %> a
+quien pedirle una invitación, puedes hacer una solicitud pública. Esto mostrará
+tu nombre y nota al resto de usuarios con sesión iniciada, que podrán enviarte
+una invitación si te reconocen.
+</p>
+
+<p>
+Tu dirección de correo electrónico debe ser válida y estar confirmada visitando
+una URL que te enviaremos por correo antes de que se muestre tu solicitud. Tu
+dirección de correo no se mostrará a ningún otro usuario (excepto a los
+moderadores).
+</p>
+
+<%= form_with model: @invitation_request, url: create_invitation_by_request_path do |f| %>
+  <div class="labelled_grid">
+    <%= f.label :name, "Nombre (no el nombre de usuario)" %>
+    <%= f.text_field :name %>
+
+    <%= f.label :email, "Dirección de correo electrónico" %>
+    <%= f.email_field :email, inputmode: :email, autocapitalize: :off %>
+
+    <%= f.label :memo, "URL" %>
+    <div>
+      <%= f.text_field :memo, autocapitalize: :off %>
+      <span class="hint">URL para verificarte (web personal, cuenta de GitHub, etc.)</span>
+    </div>
+  </div>
+
+  <%= f.submit "Solicitar invitación" %>
+<% end %>

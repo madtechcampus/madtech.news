@@ -1,0 +1,5 @@
+<%= @comment.user.username %> te ha mencionado en un comentario:
+
+  <%= word_wrap(@comment.comment, :line_width => 72).gsub(/\n/, "\n  ") %>
+
+Responde a este correo o visita <%= Routes.comment_short_id_url @comment %>

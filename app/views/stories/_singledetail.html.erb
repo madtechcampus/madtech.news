@@ -1,0 +1,163 @@
+<%# locals: (merged_stories:) -%>
+
+<%
+short_id = merged_stories.first.short_id
+classes = [
+  :story,
+  merged_stories.first.negativity_class,
+  merged_stories.first.current_upvoted? && 'upvoted',
+  merged_stories.first.current_flagged? && 'flagged',
+  merged_stories.first.is_hidden_by_cur_user && 'hidden',
+  merged_stories.first.is_saved_by_cur_user && 'saved',
+  merged_stories.first.is_deleted? && 'deleted',
+].filter(&:present?)
+%>
+
+<%# remember: _listdetail replicates a lot of this for lists of stories %>
+
+<%#
+  The h-entry, u-report-of, u-url and h-card css classes are necessary
+  for the webmentions support. http://microformats.org/wiki/h-entry
+
+  This has apparently useless <span> tags explained in a comment in CSS
+  around .negative_1 in CSS (introduced same commit as this comment).
+%>
+<li id="story_<%= short_id %>" data-shortid="<%= short_id %>" class="<%= classes.join(' ') %>">
+<div class="story_liner h-entry">
+  <div class="voters">
+    <%= link_to (merged_stories.first.show_score_to_user?(@user) ? merged_stories.first.score : '~'),
+                (@user ? '': login_path), :class => "upvoter" %>
+  </div>
+
+  <% merged_stories.filter {it.can_be_seen_by_user?(@user)}.each do |ms| %>
+    <div class="details" id="<%= ms.header_anchor %>">
+      <span role="heading" aria-level="1" class="link h-cite u-repost-of">
+        <a href="<%= Routes.url_or_comments_path(ms) %>" rel="ugc <%= ms.send_referrer? ? '' : 'noreferrer' %>" class="u-url"><%= ms.title %></a>
+      </span>
+
+      <% if ms.markeddown_description.present? %>
+        <a class="description_present" title="<%= truncate(ms.description, :length => 500) %>" href="<%= Routes.title_path ms %>">&#x2636;</a>
+      <% end %>
+
+      <span class="tags">
+        <% ms.tags.each do |tag| %>
+          <%= tag_link tag %>
+        <% end %>
+      </span>
+      <% if ms.origin.present? %>
+        <%= link_to ms.origin.identifier, origin_path(ms.origin), class: 'domain' %>
+      <% elsif ms.domain.present? %>
+        <%= link_to ms.domain.domain, domain_path(ms.domain), class: 'domain' %>
+      <% end %>
+
+      <div class="byline">
+        <span><%= ms.user_is_author? ? "escrito por" : "vía" %></span>
+        <%= inline_avatar_for @user, ms.user %>
+        <%= styled_user_link ms.user, ms, class: ['u-author', 'h-card'] %> <%= you_invited you: @user, user: ms.user %>
+
+        <% if ms.previewing %>
+          <span>ahora mismo</span>
+        <% else %>
+          <%= how_long_ago_label(ms.created_at) %>
+        <% end %>
+
+        <% if ms.is_editable_by_user?(@user) %>
+          <%= divider_tag %>
+          <a href="<%= edit_story_path(ms.short_id) %>">editar</a>
+        <% end %>
+
+        <% if @user&.is_moderator? %>
+          <%= divider_tag %>
+          <a href="<%= edit_mod_story_path(ms.short_id) %>" class="<%= ms.has_suggestions? ? "story_has_suggestions" : "" %>">editar (mod)</a>
+        <% end %>
+
+        <% if ms.can_have_suggestions_from_user?(@user) %>
+          <%= divider_tag %>
+          <%= link_to "sugerir", new_story_suggestion_path(ms.short_id), :class => "suggester" %>
+        <% end %>
+
+        <% if !ms.is_gone? && @user %>
+          <% if ms.current_flagged? %>
+            <%= divider_tag %><a class="flagger">quitar reporte (<%= Vote::STORY_REASONS[ms.current_vote[:reason]].to_s.downcase %>)</a>
+          <% elsif @user.can_flag?(ms) %>
+            <%= divider_tag %>
+            <span class="dropdown_parent">
+              <a class="flagger">reportar</a>
+            </span>
+          <% end %>
+
+          <%= divider_tag %>
+          <%= form_with :class => "hider", url: merged_stories.first.is_hidden_by_cur_user ? story_unhide_path(merged_stories.first.short_id) : story_hide_path(merged_stories.first.short_id) do |form| %>
+            <%= form.submit merged_stories.first.is_hidden_by_cur_user ? "mostrar" : "ocultar", :class => "btn-link" %>
+          <% end %>
+
+          <% if ms.hider_count > 0 %>
+            <span>
+              <% if ms.is_hidden_by_cur_user && ( ms.hider_count - 1 ) > 0 %>
+                (oculta por <span class="hidden-by-you">ti y</span>
+                <%= pluralize(ms.hider_count - 1, "usuario más", plural: "usuarios más") %>)
+              <% end %>
+              <% if !ms.is_hidden_by_cur_user %>
+                (oculta por <%= pluralize(ms.hider_count, "usuario", plural: "usuarios") %>)
+              <% end %>
+            </span>
+          <% end %>
+
+          <% if ms.disownable_by_user?(@user) %>
+            <%= divider_tag %>
+            <%= link_post "renunciar", story_disown_path(ms.short_id), { confirm: "¿Seguro que quieres renunciar a la autoría de esta publicación?"} %>
+          <% end %>
+
+          <%= divider_tag %>
+          <%= form_with :class => "saver", url: merged_stories.first.is_saved_by_cur_user ? story_unsave_path(merged_stories.first.short_id) : story_save_path(merged_stories.first.short_id) do |form| %>
+            <%= form.submit merged_stories.first.is_saved_by_cur_user ? "no guardar" : "guardar", :class => "btn-link" %>
+          <% end %>
+
+        <% end %>
+
+        <% if ms.is_gone? %>
+          [Publicación eliminada por <%= ms.is_moderated? ? "un moderador" : "quien la envió" %>]
+        <% else %>
+          <% if ms.url.present? && (!ms.is_gone? || @user.try(:is_moderator?))  %>
+            <%= divider_tag %>
+            <details class="caches" name="caches">
+              <summary>cachés</summary>
+                <ul>
+                  <li><a href="<%= ms.archiveorg_url %>">Archive.org</a></li>
+                  <li><a href="<%= ms.ghost_url %>">Ghostarchive</a></li>
+                </ul>
+            </details>
+        <% end %>
+
+          <span class="comments_label">
+            <%= divider_tag %>
+            <a role="heading" aria-level="2" href="<%= merged_stories.count > 1 ? Routes.title_path(merged_stories.first, anchor: ms.comments_anchor) : "#comments-#{merged_stories.first.short_id}" %>">
+              <%= ms.comments_count.zero? ? "sin" : ms.comments_count %>
+              <%= ms.comments_count == 1 ? 'comentario' : 'comentarios' %>
+            </a>
+          </span>
+
+          <% if ((@user&.is_moderator? && ms.flags > 0) || (ms.flags >= 3 || ms.score <= 0)) %>
+            <span> <%= divider_tag %><%= ms.vote_summary_for(@user).downcase %> </span>
+          <% end %>
+      </div>
+      <% end %>
+    </div>
+  <% end %>
+
+  <% if merged_stories.count > 1 %>
+    <div class="details byline">
+      <span class="merge"><%= merged_stories.count %> fusionadas</span>
+
+      <% if !merged_stories.first.is_gone? || @user&.is_moderator? %>
+        <span class="comments_label">
+          <%= divider_tag %>
+          <% cc = merged_stories.map(&:comments_count).sum %>
+          <%= (cc == 0) ? "sin" : "total: #{cc}" %> <%= cc == 1 ? 'comentario' : 'comentarios' %>
+        </span>
+      <% end %>
+    </div>
+  <% end %>
+
+</div>
+</li>

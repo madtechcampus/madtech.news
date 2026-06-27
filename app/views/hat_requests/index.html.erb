@@ -1,0 +1,46 @@
+<% if @hat_requests.length == 0 %>
+  No hay solicitudes de distintivo.
+<% else %>
+  <% @hat_requests.each_with_index do |hr,x| %>
+    <% if x > 0 %>
+      <hr>
+    <% end %>
+
+    <%= form_with model: hr, method: :post do |f| %>
+      <div class="labelled_grid">
+        <%= f.label :user_id, "Usuario" %>
+        <span>
+          <%= styled_user_link hr.user %>
+          <%= how_long_ago(hr.created_at) %>
+        </span>
+
+        <%= f.label :hat, "Distintivo" %>
+        <%= f.text_field "hat", required: true %>
+
+        <%= f.label :link, "Enlace" %>
+        <%= f.text_field "link", required: true, autocapitalize: :off %>
+        <% if hr.link.to_s.match(/^http/) %>
+          <%= f.label :link, "Enlace" %>
+          <a href="<%= hr.link %>" rel="ugc"><%= hr.link %></a>
+        <% end %>
+
+        <%= f.label :link, "Comentario" %>
+        <div class="shorten_first_p">
+          <%= raw Markdowner.to_html(hr.comment || '', as_of: hr.created_at) %>
+        </div>
+      </div>
+    <% end %>
+
+    <%= form_with model: hr, method: :post do |f| %>
+      <div class="labelled_grid">
+        <%= f.label :link, "Motivo" %>
+        <%= f.text_area :reason, required: true %>
+      </div>
+      <div class="row">
+        <%= f.submit "Aprobar solicitud de distintivo", formaction: approve_hat_request_path(hr) %>
+        <%= f.submit "Rechazar solicitud de distintivo", class: "deletion", formaction: reject_hat_request_path(hr)  %>
+      </div>
+    <% end %>
+  <% end %>
+<% end %>
+

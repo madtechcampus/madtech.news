@@ -1,0 +1,308 @@
+<% content_for :subnav do %>
+  <%= link_to 'Perfil público', @user %>
+  <a href="/filters">Etiquetas filtradas</a> |
+  <%= link_post 'Cerrar sesión', logout_path, confirm: '¿Seguro que quieres cerrar sesión?' %>
+<% end %>
+
+<section>
+  <%= form_with model: @edit_user, url: settings_path, method: :post, id: 'edit_user', namespace: 'edit_user' do |f| %>
+    <%= errors_for f.object %>
+
+    <section>
+      <h2>Información del perfil público</h2>
+      <div class="labelled_grid">
+        <%= f.label :username, "Usuario" %>
+        <div>
+          <%= f.text_field :username, required: true, size: 15, autocapitalize: :off, pattern: Username.username_regex_html, aria: {describedby: "usernamehint"} %>
+          <div class="hint" id="usernamehint">
+            Formato: <tt><%= Username.username_regex_s %></tt><br>
+            Crea una entrada en el <%= link_to 'registro de moderación', moderations_path %> del tipo "cambió su propio usuario de '<%= @edit_user.username %>' a 'NuevoUsuario'"
+          </div>
+        </div>
+
+        <%= f.label :email, "Correo" %>
+        <div>
+        <%= f.email_field :email, required: true, inputmode: "email", autocapitalize: :off %>
+          <% if EmailBlocklistValidation.email_on_blocklist?(@edit_user.email) %>
+            <div class="hint">
+              No enviamos correo a dominios de correo desechables; cambia tu dirección de correo.
+            </div>
+          <% end %>
+        </div>
+
+        <%= f.label :show_email, "Mostrar el correo en el perfil", class: "for_checkbox" %>
+        <span>
+          <%= f.check_box :show_email, aria: {describedby: "emailhint"} %>
+          <span class="hint" id="emailhint">
+            Solo se muestra a usuarios con sesión iniciada
+          </span>
+        </span>
+
+        <%= f.label :homepage, "Página web" %>
+        <span><%= f.url_field :homepage, autocapitalize: :off, aria: {describedby: "homepagehint"} %>
+        <span class="hint" id="homepagehint">Enlaza cuentas externas más abajo</span>
+        </span>
+
+        <%= f.label :about, "Sobre mí" %>
+        <div>
+          <%= f.text_area :about %>
+
+          <%= render :partial => "global/markdownhelp" %>
+        </div>
+      </div>
+
+      <%= f.submit "Guardar ajustes de la cuenta" %>
+    </section>
+
+    <section>
+      <h2>Ajustes de seguridad</h2>
+
+      <div class="labelled_grid">
+        <%= f.label :current_password, "Contraseña actual" %>
+        <%= f.password_field :current_password, name: "current_password", autocomplete: "off" %>
+
+        <%= f.label :password, "Nueva contraseña" %>
+        <%= f.password_field :password, autocomplete: "off" %>
+
+        <%= f.label :password_confirmation, "Confirmar contraseña" %>
+        <%= f.password_field :password_confirmation, autocomplete: "off" %>
+
+        <%= f.label :twofa, "Doble factor" %>
+        <span>
+        <% if @edit_user.totp_secret.present? %>
+          <span style="color: green; font-weight: bold;">
+            Activado
+          </span> (<a href="/settings/2fa">Desactivar</a>)
+        <% else %>
+          Desactivado (<a href="/settings/2fa">Configurar</a>)
+        <% end %>
+        </span>
+      </div>
+    </section>
+
+    <section>
+      <h2>Ajustes de notificación de respuestas a comentarios</h2>
+
+      <div class="labelled_grid">
+        <%= f.label :email_replies, "Recibir correo", class: "for_checkbox" %>
+        <span><%= f.check_box :email_replies %></span>
+        <%= f.label :pushover_replies, "Recibir alerta de Pushover",
+          class: "for_checkbox" %>
+        <span>
+          <%= f.check_box :pushover_replies, aria: {describedby: "pushoverhintreply"} %>
+          <span class="hint" id="pushoverhintreply">
+            Requiere la suscripción a Pushover de más abajo
+          </span>
+        </span>
+      </div>
+    </section>
+
+    <section>
+      <h2>Ajustes de notificación de menciones en comentarios</h2>
+
+      <div class="labelled_grid">
+        <%= f.label :inbox_mentions, "Mostrar en la bandeja de entrada", :class => "for_checkbox" %>
+        <span><%= f.check_box :inbox_mentions %></span>
+        <%= f.label :email_mentions, "Recibir correo", :class => "for_checkbox" %>
+        <span><%= f.check_box :email_mentions %></span>
+        <%= f.label :pushover_mentions, "Recibir alerta de Pushover",
+          class: "for_checkbox" %>
+        <span>
+          <%= f.check_box :pushover_mentions, aria: {describedby: "pushoverhintmention"} %>
+          <span class="hint" id="pushoverhintmention">
+            Requiere la suscripción a Pushover de más abajo
+          </span>
+        </span>
+      </div>
+    </section>
+
+    <section>
+      <h2>Ajustes de notificación de mensajes privados</h2>
+
+      <div class="labelled_grid">
+        <%= f.label :email_messages, "Recibir correo", class: "for_checkbox" %>
+        <span><%= f.check_box :email_messages %></span>
+        <%= f.label :modmail_messages, "Recibir correo de ModMail", class: "for_checkbox" %>
+        <span>
+          <%= f.check_box :email_messages, { disabled: true, checked: true }, aria: {describedby: "notificationmodhint"} %>
+          <span class="hint" id="notificationmodhint">
+            Las notificaciones de los moderadores son obligatorias
+          </span>
+        </span>
+        <%= f.label :pushover_messages, "Recibir alerta de Pushover",
+          class: "for_checkbox" %>
+        <span>
+          <%= f.check_box :pushover_messages, aria: {describedby: "pushoverhintmessage"} %>
+          <span class="hint" id="pushoverhintmessage">
+            Requiere la suscripción a Pushover de más abajo
+          </span>
+        </span>
+      </div>
+    </section>
+
+    <section>
+      <h2>Ajustes de comentarios en historias publicadas</h2>
+
+      <div class="labelled_grid">
+        <%= f.label :show_submitted_story_threads,
+          raw("Mostrar en <a href=\"/threads\">Tus hilos</a>"),
+          class: "for_checkbox" %>
+        <span><%= f.check_box :show_submitted_story_threads %></span>
+      </div>
+    </section>
+
+    <section>
+      <h2>Ajustes de la lista de correo</h2>
+
+      <p>
+      Cuando está activado, recibirás todas las historias y comentarios recién
+      publicados en la dirección de correo introducida arriba, salvo las historias
+      y comentarios filtrados por tus <a href="/filters">filtros de etiquetas</a>.
+      Todos los correos parecerán enviados a tu dirección privada de la lista
+      que se muestra abajo, sobre la que puedes filtrar, y los correos que envíes
+      a esa dirección se publicarán bajo tu cuenta en este sitio.  Deberías mantener
+      tu dirección de lista única en privado para evitar que otros publiquen comentarios en tu nombre.
+      </p>
+
+      <div class="labelled_grid">
+        <%= f.label :mailing_list_mode, "Recibir correos de la lista" %>
+        <%= f.select :mailing_list_mode, [ [ "Sin correos", 0 ],
+          [ "Todas las historias y comentarios", 1 ], [ "Solo historias", 2 ] ],
+          required: true %>
+        <label>Dirección de la lista</label>
+        <span>
+          <tt><%= Rails.application.shortname %>-<%=
+            @edit_user.mailing_list_token %>@<%= Rails.application.domain %></tt>
+        </span>
+      </div>
+    </section>
+
+    <section>
+      <h2>Ajustes varios</h2>
+        <fieldset class="radio-group-container grid-fieldset">
+          <legend>Esquema de color</legend>
+          <div class="radio-group grid-fieldset">
+            <label><%= f.radio_button :prefers_color_scheme, :system, aria: {describedby: "color-scheme-details"} %> Sistema (<a href="https://lobste.rs/s/eg1n75/dark_mode" id="color-scheme-details">detalles</a>)</label>
+            <label><%= f.radio_button :prefers_color_scheme, :light %> Claro</label>
+            <label><%= f.radio_button :prefers_color_scheme, :dark %> Oscuro</label>
+          </div>
+        </fieldset>
+
+        <fieldset class="radio-group-container grid-fieldset">
+          <legend>Contraste</legend>
+          <div class="radio-group">
+            <label><%= f.radio_button :prefers_contrast, :system %> Sistema</label>
+            <label><%= f.radio_button :prefers_contrast, :normal %> Normal</label>
+            <label><%= f.radio_button :prefers_contrast, :high %> Alto</label>
+          </div>
+        </fieldset>
+
+      <div class="labelled_grid">
+        <%= f.label :show_story_previews, "Mostrar vistas previas de historias",
+          class: "for_checkbox" %>
+        <span><%= f.check_box :show_story_previews %></span>
+
+        <%= f.label :show_avatars, "Mostrar avatares de usuario", class: "for_checkbox" %>
+        <span><%= f.check_box :show_avatars %></span>
+      </div>
+
+      <br><br>
+      <%= f.submit "Guardar ajustes de la cuenta" %>
+    </section>
+  <% end %>
+</section>
+
+<section>
+  <h2 name="external">Cuentas externas</h2>
+
+  <div class="labelled_grid">
+    <%= label_tag :gravatar,
+      raw("<a href=\"https://gravatar.com/\">Gravatar</a>") %>
+    <span>
+      Tu avatar se almacenará en caché a partir del icono de Gravatar de tu dirección de correo de arriba.
+      <%= link_post "Caducar la caché", "/avatars/expire" %>
+    </span>
+    <% if Pushover.enabled? %>
+      <%= label_tag :pushover_user_key,
+          raw("<a href=\"https://pushover.net/\">Pushover</a>") %>
+      <span>
+        <%= link_post((@edit_user.pushover_user_key.present? ?
+            "Gestionar la suscripción a Pushover" : "Suscribirse con Pushover"),
+            "/settings/pushover_auth", class_name: "pushover_button") %>
+        <div class="hint">
+          Para las notificaciones opcionales de comentarios y mensajes de arriba
+        </div>
+      </span>
+    <% end %>
+    <% if Github.enabled? %>
+      <%= label_tag :github_username,
+        raw("<a href=\"https://github.com/\">GitHub</a>") %>
+      <span>
+        <% if @edit_user.github_username.present? %>
+          Vinculado a
+          <strong><a href="https://github.com/<%= h(@edit_user.github_username)
+            %>"><%= h(@edit_user.github_username) %></a></strong>
+            <%= link_post "Desvincular", "/settings/github_disconnect" %>
+        <% else %>
+          <a href="/settings/github_auth">Vincular</a>
+        <% end %>
+      </span>
+      <% end %>
+    <% if Mastodon.enabled? %>
+      <%= label_tag :mastodon_username,
+        raw("<a href=\"https://joinmastodon.org/\">Mastodon</a>") %>
+      <span>
+        <% if @edit_user.mastodon_username.present? %>
+          Vinculado a
+          <strong><a href="https://<%= @edit_user.mastodon_instance %>/@<%= h(@edit_user.mastodon_username)
+            %>">@<%= h(@edit_user.mastodon_username) %>@<%=@edit_user.mastodon_instance%></a></strong>
+            <%= link_post "Desvincular", "/settings/mastodon_disconnect" %>
+        <% else %>
+          <a href="/settings/mastodon_authentication">Vincular</a>
+        <% end %>
+      </span>
+    <% end %>
+  </div>
+</section>
+
+<section>
+  <h2 name="invite">Invitar a un usuario nuevo</h2>
+
+  <% if @user.can_invite? %>
+    <%= render :partial => "users/invitationform" %>
+  <% else %>
+      No puedes enviar invitaciones: <%= @user.disabled_invite_reason %>
+  <% end %>
+</section>
+
+<section>
+  <%= form_with model: @edit_user, url: deactivate_path, method: :post, id: 'deactivate_user', namespace: 'deactivate_user' do |f| %>
+    <h2>Desactivar la cuenta</h2>
+    <p>
+    Para desactivar tu cuenta, verifica abajo tu contraseña actual.
+    </p>
+    <ul>
+      <li>Tu perfil mostrará que has desactivado tu cuenta.</li>
+      <li>No podrás iniciar sesión, pero puedes restablecer tu contraseña si quieres reactivar tu cuenta.</li>
+      <li>Tu usuario quedará reservado y no estará disponible para ninguna otra cuenta.</li>
+      <li>Tus mensajes privados se eliminarán (los destinatarios conservarán sus copias de los mensajes).</li>
+      <li>Las historias que has publicado no se eliminarán.</li>
+      <li>
+        Tus comentarios con puntuación negativa se eliminarán, y puedes marcar "renunciar a los comentarios"
+        abajo si quieres que todas tus historias y comentarios pasen a aparecer como del usuario
+        <a href="/~inactive-user">inactive-user</a> en lugar de tu usuario.
+      </li>
+    </ul>
+
+    <div class="labelled_grid">
+      <%= f.label :password, "Verificar contraseña" %>
+      <%= f.password_field :password, required: true, autocomplete: "off" %>
+      <%= f.label :i_am_sure, "Estoy seguro", class: "for_checkbox" %>
+      <span><%= f.check_box :i_am_sure, required: true %></span>
+      <%= f.label :disown, "Renunciar a historias/comentarios", :class => "for_checkbox" %>
+      <span><%= f.check_box :disown, aria: {describedby: "disownhint"}%> <span class="hint" id="disownhint">(opcional)</span></span>
+    </div>
+
+    <%= f.submit "Sí, desactivar mi cuenta", :class => "deletion" %>
+  <% end %>
+</section>

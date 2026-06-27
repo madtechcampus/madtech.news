@@ -1,0 +1,10 @@
+<%# locals: (comment:, show_tree_lines: false) -%>
+<div class="preview">
+  <% if comment&.valid? %>
+    <%= render partial: "comment", locals: {
+      comment: comment,
+      show_tree_lines: show_tree_lines,
+      show_folder_control: false,
+    } %>
+  <% end %>
+</div>

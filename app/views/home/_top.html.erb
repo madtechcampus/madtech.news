@@ -1,0 +1,6 @@
+<%# locals: () %>
+
+<p class="hint">
+  Puedes editar la URL para cambiar el periodo de tiempo, por ejemplo <tt>/5d</tt> o <tt>/2y</tt>;
+  las unidades disponibles son: <%= IntervalHelper::TIME_INTERVALS.map { |k,v| "<b>#{k}</b>#{v[1..].downcase}" }.join(", ").html_safe %>.
+</p>

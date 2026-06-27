@@ -1,0 +1,15 @@
+<p>
+El dominio <%= link_to @domain.domain, @domain %> tiene <%= number_with_delimiter @origins.count %> <%= @origins.count == 1 ? "origen" : "orígenes" %>
+</p>
+
+<ul>
+  <% @origins.each do |origin| %>
+    <li>
+      <%= link_to origin.identifier, origin_path(origin) %> <%= origin.stories_count %> <%= origin.stories_count == 1 ? "historia" : "historias" %>
+      <% if origin.banned? %>
+        bloqueado
+      <% end %>
+      <%= link_to 'Editar', edit_mod_origin_path(origin) if @user&.is_moderator?  %>
+    </li>
+  <% end %>
+</ul>

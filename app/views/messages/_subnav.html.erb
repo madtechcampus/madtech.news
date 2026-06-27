@@ -1,0 +1,8 @@
+<%# locals: () -%>
+<% content_for :subnav do %>
+  <%= link_to_different_page 'Bandeja de entrada', inbox_all_path %>
+  <%= link_to_different_page 'No leídos', inbox_unread_path %>
+  <%= link_to_different_page 'Mensajes', messages_path %>
+  <%= link_to_different_page 'Enviados', messages_sent_path %>
+  <%= link_to_different_page 'ModMail', mod_mails_path %>
+<% end %>

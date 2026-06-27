@@ -1,0 +1,49 @@
+<% render partial: 'about/subnav' %>
+
+<p>
+Un distintivo es una forma formal y verificada de publicar un comentario
+hablando en nombre de un proyecto, organización o empresa. Cada usuario puede
+tener varios distintivos, de los cuales puede seleccionar uno para llevarlo
+puesto al publicar un comentario o enviar un mensaje privado. Los distintivos
+retirados no aparecen en esta tabla; consulta la página de perfil del usuario.
+</p>
+
+<% if @user %>
+  <h2><a href="<%= new_hat_request_path %>">Solicitar distintivo</a></h2>
+<% end %>
+
+<table class="data zebra" width="100%" cellspacing="0">
+<tr>
+  <th style="width: 130px;">Usuario</th>
+  <th>Distintivo</th>
+  <th>Enlace</th>
+  <th></th>
+</tr>
+<% @hat_groups.keys.sort_by{|a| a.downcase }.each do |hg| %>
+  <% @hat_groups[hg].sort_by{|hh| hh.user.username.downcase }.each do |hh| %>
+    <tr>
+      <td><%= styled_user_link hh.user %></td>
+      <td><%= styled_hat(hh) %></td>
+      <td>
+        <% if hh.link.to_s.match(/^http/) %>
+          <a href="<%= hh.link %>" rel="ugc"><%= hh.link %></a>
+        <% elsif hh.link.blank? %>
+          <span class="na">Ninguno</span>
+        <% else %>
+          <% if @user %>
+            <%= hh.link %>
+          <% else %>
+            <%= hh.sanitized_link %>
+          <% end %>
+        <% end %>
+        <% if hh.doffed_at? %>
+          retirado <%= how_long_ago_label(hh.doffed_at) %>
+        <% end %>
+      </td>
+      <% if @user&.is_moderator? %>
+        <td><%= link_to "Editar", edit_hat_path(hh) %></td>
+      <% end %>
+    </tr>
+  <% end %>
+<% end %>
+</table>

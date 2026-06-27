@@ -1,0 +1,47 @@
+<%= render partial: 'subnav' %>
+
+<h2>
+  De
+  <% if @message.author %>
+    <%= styled_user_link @message.author %> <%= you_invited you: @user, user: @message.author %>
+  <% else %>
+    <%= @message.author_username %>
+  <% end %>
+  <%= styled_hat(@message.hat) if @message.hat %>
+  para
+  <%= styled_user_link @message.recipient %> <%= you_invited you: @user, user: @message.recipient %>
+  <%= how_long_ago_label(@message.created_at) %>
+</h2>
+
+<div class="comment_text">
+  <%= raw @message.linkified_body %>
+</div>
+
+<div class="row">
+  <%= form_with url: message_path(@message.short_id), method: :delete do |f| %>
+    <%= f.submit "Eliminar mensaje" %>
+  <% end %>
+
+  <%= form_with url: message_keep_as_new_path(@message.short_id), method: :post do |f| %>
+    <%= f.submit "Mantener como nuevo" %>
+  <% end %>
+
+  <% if @user.is_moderator? %>
+    <%= form_with url: message_mod_note_path(@message.short_id), method: :post do |f| %>
+      <%= f.submit "ModNote" %>
+    <% end %>
+  <% end %>
+</div>
+
+<% if @new_message %>
+  <p>
+    Redactar respuesta
+    <% if @new_message %>
+      para <%= @new_message.recipient_username %>
+    <% end %>
+  </p>
+
+  <%= render partial: 'form', locals: { new_message: @new_message, replying: true } %>
+<% else %>
+  Si necesitas ayuda con este mensaje, contacta con <%= link_to 'un moderador', moderators_path %>.
+<% end %>

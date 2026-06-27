@@ -1,0 +1,274 @@
+<%= possible_flag_warning(@showing_user, @user) %>
+
+<% content_for :subnav do %>
+  <% if @user && @showing_user.is_active? && @showing_user != @user %>
+    <%= link_to "Enviar un mensaje", messages_path(to: @showing_user.username) %>
+  <% end %>
+<% end %>
+
+<section class="profile">
+  <% if @showing_user.is_active? %>
+    <div id="gravatar">
+      <%= avatar_img(@showing_user, 100) %>
+    </div>
+  <% end %>
+
+  <div class="labelled_grid">
+  <label>Estado</label>
+  <span>
+    <% if @showing_user.is_banned? %>
+      Vetado por un moderador
+    <% elsif !@showing_user.is_active? %>
+      El usuario desactivó su propia cuenta
+    <% else %>
+      <%= @showing_user.is_admin? ? "administrador" :
+        (@showing_user.is_moderator? ? "moderador" : "usuario") %>
+      activo
+      <% if !@showing_user.can_invite? %>
+        con las invitaciones
+        <% if !@showing_user.can_submit_stories? %>
+          y el envío de historias
+        <% end %>
+        desactivadas
+      <% end %>
+    <% end %>
+  </span>
+
+    <label>Se unió</label>
+    <span>
+      <%= how_long_ago_label(@showing_user.created_at) %>
+      <% if @showing_user.invited_by_user %>
+        por <%= link_to 'invitación', users_tree_path(anchor: @showing_user.username) %> de
+        <%= link_to @showing_user.invited_by_user.try(:username), @showing_user.invited_by_user %>
+      <% end %>
+    </span>
+
+    <% if @showing_user.is_banned? %>
+      <label>Vetado</label>
+      <span>
+        <%= how_long_ago_label(@showing_user.banned_at) %>
+        <% if @showing_user.banned_by_user %>
+          por <%= link_to @showing_user.banned_by_user.try(:username),
+            @showing_user.banned_by_user %>:
+            <em><%= @showing_user.banned_reason %></em>
+        <% end %>
+      </span>
+    <% end %>
+
+    <% if @showing_user.deleted_at? %>
+      <label>Desactivado</label>
+      <span>
+        <%= how_long_ago_label(@showing_user.deleted_at) %>
+        <% if @showing_user.deleted_at <= Time.new(2025, 9, 9) && !@showing_user.is_banned? %>
+          <br>
+          (Este usuario se desactivó antes de que las desactivaciones se añadieran al registro de moderación.)
+        <% end %>
+      </span>
+    <% end %>
+
+    <% if !@showing_user.is_admin? %>
+      <label>Karma</label>
+      <span>
+        <%= @showing_user.karma %>
+      </span>
+    <% end %>
+
+    <label>Historias enviadas</label>
+    <span>
+      <%= stories_submitted_content(@user, @showing_user) %>
+    </span>
+
+    <label>Comentarios publicados</label>
+    <span><%= comments_posted_content(@user, @showing_user) %></span>
+
+    <% if @showing_user.hats.any? %>
+      <label>Sombreros</label>
+      <div>
+      <% @showing_user.hats.each do |hat| %>
+        <%= styled_hat(hat) %>
+        <% if hat.doffed_at? %>
+          retirado <%= how_long_ago_label(hat.doffed_at) %>
+        <% else %>
+          <% if @user && ((hat.user == @user) || @user.is_moderator?) %>
+            <%= link_to 'Retirar', doff_hat_path(hat) %>
+          <% end %>
+        <% end %>
+      <% end %>
+      </div>
+    <% end %>
+
+    <% if @user&.is_admin? || (@user && @showing_user&.show_email?) %>
+      <label>Correo</label>
+      <span>
+        <%= @showing_user.email %>
+      </span>
+    <% end %>
+
+    <% if @showing_user.homepage.present? %>
+      <label>Página web</label>
+
+      <span>
+        <a href="<%= h(@showing_user.homepage) %>"
+          rel="me ugc"><%= h(@showing_user.homepage) %></a>
+        <% if @showing_user.homepage.start_with?('gemini://') %>
+          (<a href="https://portal.mozz.us/gemini/<% h(@showing_user.homepage[9..-1]) %>">proxy</a>)
+        <% elsif @showing_user.homepage.start_with?('gopher://') %>
+          (<a href="https://gopher.floodgap.com/gopher/gw?<% h(@showing_user.homepage[9..-1]) %>">proxy</a>)
+        <% end %>
+      </span>
+    <% end %>
+
+    <% if @showing_user.github_username.present? %>
+      <label>GitHub</label>
+
+      <span>
+        <a href="https://github.com/<%= h(@showing_user.github_username) %>"
+          rel="me ugc">https://github.com/<%= h(@showing_user.github_username)
+          %></a>
+      </span>
+    <% end %>
+
+    <% if @showing_user.mastodon_username.present? && @showing_user.mastodon_instance.present? %>
+      <label>Mastodon</label>
+
+      <span>
+        <a href="https://<%= h(@showing_user.mastodon_instance)%>/@<%= h(@showing_user.mastodon_username)%>"
+          rel="me ugc">@<%= h(@showing_user.mastodon_username)%>@<%= h(@showing_user.mastodon_instance)%>
+          </a>
+      </span>
+    <% end %>
+
+    <% if @showing_user.is_active? %>
+      <label>Sobre mí</label>
+
+      <div class="shorten_first_p">
+        <% if @showing_user.about.present? %>
+          <%= raw @showing_user.linkified_about %>
+        <% else %>
+          <span class="na">Un misterio...</span>
+        <% end %>
+      </div>
+    <% end %>
+
+  </div>
+</section>
+
+<% if Rails.env.development? || @user == @showing_user || @user&.is_moderator? %>
+  <section class="profile">
+    <div class="user-stats flash-notice">
+      <p>
+        Comentarios publicados en los últimos 6 meses: <%= @showing_user.comments.recent.count %><br>
+        &nbsp;&nbsp;...publicados en historias que no marcaste como de autoría propia: <%= @showing_user.comments.recent.on_stories_not_authored_by(@showing_user).count %><br>
+        &nbsp;&nbsp;&nbsp;&nbsp;...que recibieron una puntuación superior a la media: <%= @showing_user.comments.recent.on_stories_not_authored_by(@showing_user).above_average.count %>
+      </p>
+
+      <p>(Esta sección solo es visible para ti y para los moderadores.
+      Los moderadores la usan al evaluar si
+      los usuarios participan en la comunidad o explotan el sitio para <a href="/about#self-promo">autopromoción</a>. Es una señal de alarma cuando alguien nunca publica comentarios bien recibidos fuera de sus propios enlaces.)
+      </p>
+    </div>
+  </section>
+<% end %>
+
+<% if @user && @user.is_moderator? && !@showing_user.is_moderator? %>
+  <h2>Información para moderadores</h2>
+
+  <section class="labelled_grid profile">
+    <label>Denunciado (1m)</label>
+    <span>
+      <% if (stats = FlaggedCommenters.new('1m').check_list_for(@showing_user)) %>
+        <a href="/mod/commenters/1m#<%= @showing_user.username %>">#<%= stats[:rank] %></a> con <%= '%.2f' % (stats[:sigma] || 0) %> &sigma;
+      <% else %>
+        No
+      <% end %>
+    </span>
+
+    <label>Autopromotor</label>
+    <span>
+      <% if @showing_user.is_heavy_self_promoter? %>
+        <strong>Sí</strong>
+      <% else %>
+        No
+      <% end %>
+    </span>
+  </section>
+
+  <section class="profile">
+    <label>Últimas 20 acciones de moderación</label>
+    <%= render partial: 'mod/activities/table', locals: { mod_activities: @mod_activities } %>
+
+    <%= form_with model: @mod_note, method: :post do |f| %>
+      <%= errors_for @mod_note %>
+      <%= f.hidden_field :username %>
+      <div class="labelled_grid">
+        <%= f.label :note, "Nueva nota" %>
+        <%= f.text_area :note, required: true, rows: 5 %>
+      </div>
+      <%= f.submit "Nota de moderación 🔑" %>
+    <% end %>
+  </section>
+
+  <% if @user.is_admin? %>
+    <section class="profile">
+      <h3>Información para administradores</h3>
+
+      <label>Votos recientes</label>
+      <table class="data zebra clear tall">
+        <% @showing_user.votes_for_others.limit(15).each do |v| %><tr>
+          <td><%= v.vote == 1 ? '+' : v.reason %></td>
+          <% if v.comment_id %>
+            <td><a href="/~<%= v.comment.user.try(:username) %>"><%= v.comment.user.try(:username) %></a></td>
+            <td>
+              <%= v.story.title %>
+              <a href="<%= Routes.comment_target_path(v.comment) %>">comentario</a>:<br>
+              <%= v.comment.comment.split[0..10].join(' ') %>
+            </td>
+          <% elsif v.story_id && !v.comment_id %>
+            <td><a href="/~<%= v.story.user.try(:username) %>"><%= v.story.user.try(:username) %></a></td>
+            <td><a href="<%= Routes.title_path v.story %>"><%= v.story.title %></a></td>
+          <% end %>
+        </tr><% end %>
+      </table>
+
+      <% if @showing_user.is_banned? || @showing_user.banned_from_inviting? %>
+        <%= form_with url: user_unban_path, method: :post do |f| %>
+          <p>
+            <% if @showing_user.is_banned? %>
+              <div class="labelled_grid">
+                <%= f.label :reason, "Motivo" %>
+                <%= f.text_field :reason, required: true, size: 80 %>
+              </div>
+              <%= f.submit "Quitar veto" %>
+            <% end %>
+            <% if @showing_user.banned_from_inviting? %>
+              <%= f.submit "Activar invitaciones", formaction: user_enable_invite_path %>
+            <% end %>
+          </p>
+        <% end %>
+      <% end %>
+
+      <% if !@showing_user.is_banned? || !@showing_user.banned_from_inviting? %>
+        <p>
+          Vetar a un usuario o desactivar sus invitaciones le enviará un correo con el motivo de abajo,
+          con tu dirección de correo como Reply-To para que el usuario pueda responder.
+        </p>
+        <%= form_with url: user_ban_path, method: :post do |f| %>
+          <div class="labelled_grid">
+            <%= f.label :reason, "Motivo" %>
+            <%= f.text_field :reason, required: true %>
+          </div>
+          <p>
+            <% if !@showing_user.is_banned? %>
+              <%= f.submit "Vetar", class: 'deletion' %>
+            <% end %>
+            <% if !@showing_user.banned_from_inviting? %>
+              <%= f.submit "Desactivar invitaciones", formaction: user_disable_invite_path %>
+            <% end %>
+          </p>
+        <% end %>
+      <% end %>
+
+      <%= link_to 'Reasignar padre', new_mod_reparent_path({}, id: @showing_user) %>
+    </section>
+  <% end %>
+<% end %>

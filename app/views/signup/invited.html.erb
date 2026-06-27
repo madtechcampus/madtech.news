@@ -1,0 +1,55 @@
+<%= form_with model: @new_user, url: signup_path do |f| %>
+  <p>
+  Para crear una cuenta nueva, introduce tu correo y una contraseña.
+  Tu correo nunca se mostrará a otros usuarios y solo se usará
+  si necesitas restablecer tu contraseña, o para recibir avisos opcionales
+  de mensajes nuevos.  Podrás cambiar tu usuario más adelante.
+  </p>
+
+  <%= errors_for(@new_user) %>
+
+  <div class="labelled_grid">
+    <% if not Rails.application.open_signups? %>
+      <%= f.hidden_field "invitation_code", :value => @invitation.code, :name => :invitation_code %>
+      <%= f.label :invitation, "Invitado por" %>
+      <%= link_to @invitation.user.username, user_path(@invitation.user), target: '_blank' %>
+    <% end %>
+
+    <%= f.label :username, "Usuario" %>
+    <div>
+      <%= f.text_field :username, required: true, autocapitalize: :off %>
+      <div class="hint">
+        <tt><%= Username.username_regex_s %></tt>
+      </div>
+    </div>
+
+    <%= f.label :email, "Correo electrónico" %>
+    <div>
+      <%= f.email_field :email, required: true, autocapitalize: :off %>
+      <div class="hint">
+Se usará tu <a href="http://www.gravatar.com/" target="_blank">Gravatar</a>
+      </div>
+    </div>
+
+    <%= f.label :password, "Contraseña" %>
+    <%= f.password_field :password, required: true, autocomplete: "off" %>
+
+    <%= f.label :password_confirmation, "Contraseña (repetir)",
+      required: true %>
+    <%= f.password_field :password_confirmation, required: true, autocomplete: "off" %>
+
+    <p>
+    ¿Quieres contarnos algo sobre ti?  Es opcional, pero será visible en
+    tu perfil público y podrás cambiarlo en cualquier momento.
+    </p>
+
+    <%= f.label :about, "Sobre mí" %>
+    <div>
+      <%= f.text_area :about%>
+
+      <%= render :partial => "global/markdownhelp" %>
+    </div>
+  </div>
+
+  <%= f.submit "Crear cuenta" %>
+<% end %>

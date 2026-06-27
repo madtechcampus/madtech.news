@@ -1,0 +1,20 @@
+<h1>Reasignar invitador de <%= @reparent_user.username %></h1>
+
+<%= form_with url: mod_reparents_path({}, id: @reparent_user), method: :post do |f| %>
+  <p>
+  Esto reasignará a <%= @reparent_user.username %> como invitado tuyo en el árbol de invitaciones, creará una nota de moderación en el usuario con su invitador anterior y añadirá una entrada en el registro de moderación con el motivo indicado.
+  </p>
+
+  <p>
+  Esto debería usarse en contadas ocasiones, porque dificulta investigar cuentas títere (sockpuppets) y anillos de votos.
+  Actualmente el único uso conocido es cuando este usuario ha sido objeto de abuso fuera del sitio por parte de su invitador y aquí no podemos hacer gran cosa salvo intentar desvincularlos.
+  Escribe un buen motivo aquí, va a recibir atención precisamente por ser algo poco habitual.
+  </p>
+
+  <div class="boxline">
+    <%= f.label :reason, "Motivo" %>
+    <%= f.text_field :reason, required: true, size: 80 %>
+  </div>
+  <%= f.submit "Reasignar invitador" %>
+<% end %>
+

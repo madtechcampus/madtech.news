@@ -1,0 +1,22 @@
+<% content_for :subnav do %>
+  <a href="/settings">Volver a los ajustes</a>
+<% end %>
+
+<%= form_with url: twofa_update_url do |f| %>
+  <p>
+  Para activar la autenticación de doble factor en tu cuenta usando tu nuevo
+  secreto TOTP, introduce el código de seis dígitos de tu aplicación TOTP:
+  </p>
+
+  <div class="labelled_grid">
+    <%= f.label :totp_code, "Código TOTP" %>
+    <%= f.text_field :totp_code,
+      required: true,
+      inputmode: "numeric",
+      pattern: "[0-9]+",
+      autocomplete: "one-time-code",
+      autofocus: true,
+      class: "totp_code" %>
+  </div>
+  <%= f.submit "Verificar y activar" %>
+<% end %>

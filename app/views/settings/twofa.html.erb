@@ -1,0 +1,26 @@
+<% content_for :subnav do %>
+  <a href="/settings">Volver a los ajustes</a>
+<% end %>
+
+<%= form_with model: @user, url: twofa_auth_url, method: :post do |f| %>
+  <p>
+  <% if @user.has_2fa? %>
+    Para desactivar la autenticación de doble factor en tu cuenta, introduce tu
+    contraseña actual:
+  <% else %>
+    Para empezar a configurar la autenticación de doble factor en tu cuenta,
+    introduce tu contraseña actual:
+  <% end %>
+  </p>
+
+  <div class="labelled_grid">
+    <%= f.label :password, "Contraseña actual" %>
+    <%= f.password_field :password, required: true, autocomplete: "off" %>
+  </div>
+
+  <% if @user.has_2fa? %>
+    <%= f.submit "Desactivar la autenticación de doble factor" %>
+  <% else %>
+    <%= f.submit "Continuar" %>
+  <% end %>
+<% end %>

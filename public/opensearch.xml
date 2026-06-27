@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OpenSearchDescription xmlns="http://a9.com/-/spec/opensearch/1.1/" xmlns:moz="http://www.mozilla.org/2006/browser/search/">
+<ShortName>MadTech News</ShortName>
+<Description>Agregador de enlaces y discusión de la comunidad Mad Tech Campus</Description>
+<Url type="text/html" method="GET" template="https://madtech.news/search?what=stories&amp;order=newest&amp;q={searchTerms}" />
+<Url type="application/opensearchdescription+xml" rel="self" template="https://madtech.news/opensearch.xml" />
+<Image height="64" width="64" type="image/x-icon">https://madtech.news/favicon.ico</Image>
+<Language>es</Language>
+<moz:SearchForm>https://madtech.news/search</moz:SearchForm>
+</OpenSearchDescription>

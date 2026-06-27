@@ -1,0 +1,7 @@
+Hola <%= @invitation.email %>:
+
+El usuario <%= @invitation.user.username %> te ha invitado a <%= Rails.application.name %> (<%= Rails.application.root_url %>)<%= @invitation.memo.present? ? raw("\n\n   #{@invitation.memo}") : "" %>
+
+Para aceptar esta invitación y crear una cuenta, visita la siguiente URL:
+
+<%= Rails.application.root_url %>invitations/<%= @invitation.code %>

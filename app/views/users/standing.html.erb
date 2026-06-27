@@ -1,0 +1,72 @@
+<div class="box wide">
+  <h1>Desglose de los comentaristas que reciben denuncias en <%= @interval[:human] %></h1>
+
+  <p>
+    La mayoría de los comentaristas reciben cero o muy pocas denuncias en sus comentarios en <%= @interval[:human] %>.
+    Actualmente, los usuarios que ven el aviso han sido denunciados entre <%= @fc_flagged.first %> y <%= @fc_flagged.last %> veces.
+    O, para verlo visualmente:
+  </p>
+
+  <table class="standing">
+    <% (0..@fc_flagged.last.to_i).each do |n_flags| %>
+      <tr>
+        <td>
+          <% if @flagged_user_stats && n_flags == @flagged_user_stats[:n_flags] %>
+            <div class="jaccuse">Tú</div>
+          <% else %>
+            <%= @lookup[n_flags].to_i %>&nbsp;<%= @lookup[n_flags].to_i == 1 ? "usuario" : "usuarios" %>
+          <% end %>
+        </td>
+        <td>
+          recibió&nbsp;<%= n_flags %>&nbsp;<%= n_flags == 1 ? "denuncia" : "denuncias" %>
+        </td>
+        <% if n_flags < @fc_flagged.first.to_i %>
+          <td class="unwarned">
+            <% @lookup[n_flags].to_i.times do %><div>&#129438;</div><% end %>
+          </td>
+        <% else %>
+          <td class="warned">
+            <% @lookup[n_flags].to_i.times do %><div>&#10060;</div><% end %>
+          </td>
+        <% end %>
+      </tr>
+    <% end %>
+  </table>
+
+  <p>
+    Si estás viendo el aviso, lo mejor que puedes hacer es revisar abajo tus comentarios denunciados recientes, quizá hablar con <%= link_to 'un moderador', moderators_path %> sobre qué crees que ha ido mal, y ajustarte a las normas de la comunidad.
+    Si no puedes o no quieres hacerlo, puedes eliminar tu cuenta desde el final de tus <%= link_to 'ajustes', settings_path %>.
+  </p>
+
+  <p>
+    Contamos el número total de denuncias porque es la medida más directa del daño:
+    a veces son uno o dos comentarios realmente desagradables que llegan a puntuaciones muy negativas,
+    pero lo más habitual es un patrón constante de comportamiento inapropiado, grosero, despectivo o abusivo que envenena muchas discusiones.
+    Hemos probado medidas más complicadas, pero se correlacionan casi a la perfección con un simple recuento y son mucho más difíciles de explicar que el número total de veces que otro usuario ha denunciado tu comportamiento como inapropiado.
+  </p>
+
+  <p>
+    El aviso (y la aparición en el panel de moderación) no salta hasta que un autor ha recibido un número inusualmente alto de denuncias en varios comentarios de varios hilos, porque cualquiera puede tener un mal día o un mal hilo.
+    El problema es un patrón a lo largo de muchos hilos, sobre todo si lleva ya un tiempo.
+  </p>
+
+  <p>
+    Para responder a algunas objeciones habituales:
+    Esto no se basa en el porcentaje de comentarios del autor que han sido denunciados ni en la puntuación media, porque los buenos comentarios no excusan los malos.
+    Esto no ignora los comentarios en los que te sientes provocado o justificado, porque sigues siendo responsable de tus palabras.
+    Esto incluye denuncias en comentarios con puntuación neta positiva, porque MadTech News no es un concurso para escribir comentarios que sean un poco más graciosos o perspicaces que crueles.
+    Si crees que las personas a las que respondes no merecen cortesía y respeto: ¿por qué dedicas tiempo a hablar con ellas siquiera?
+  </p>
+
+  <p>
+    Como referencia, abajo tienes tus comentarios denunciados recientes.
+  </p>
+</div>
+
+<ol class="comments comments1">
+  <% @flagged_comments.each do |comment| %>
+    <li><%= render "comments/comment", :comment => comment, :show_story => true, force_open: true %>
+      <ol class="comments"></ol>
+    </li>
+  <% end %>
+</ol>

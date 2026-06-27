@@ -1,0 +1,6 @@
+<%= @banner.username %> te ha baneado de <%= Rails.application.name %> por el siguiente motivo:
+
+  <%= word_wrap(@reason, :line_width => 72).gsub(/\n/, "\n  ") %>
+
+Ya no puedes iniciar sesión en el sitio. Si lo deseas, puedes
+hablar sobre este baneo con el moderador respondiendo a este correo.

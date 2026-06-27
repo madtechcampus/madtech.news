@@ -1,0 +1,10 @@
+<%# locals: (showing_user:, interval:) -%>
+<div class="flash-error">
+  Tus comentarios han recibido muchas denuncias en varias historias en <%= interval[:human] %>.
+  Consulta <%= link_to 'tu situación', user_standing_path(@user.username) %> para ver el contexto de lo inusual que es esto.
+  Reconsidera tu comportamiento o <a href="https://xkcd.com/386">tómate un descanso</a>.
+  <br><br>
+
+  También puedes hablar con <%= link_to 'un moderador', moderators_path %> sobre qué ha ido mal, o
+  eliminar tu cuenta desde el final de tus <%= link_to 'ajustes', settings_path %> si prefieres marcharte.
+</div>

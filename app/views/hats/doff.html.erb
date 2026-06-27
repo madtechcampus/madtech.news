@@ -1,0 +1,19 @@
+<%= form_with url: doff_by_user_hat_path(@hat) do |f| %>
+  <div class="labelled_grid">
+    <%= f.label :user_id, "Usuario" %>
+    <%= styled_user_link @hat.user %>
+
+    <%= f.label :hat, "Distintivo" %>
+    <%= styled_hat(@hat) %>
+
+    <%= f.label :reason, "Motivo" %>
+    <span>
+      <%= f.text_field :reason %>
+      <span class="hint">
+        Explicación pública breve, como "Dejó el proyecto"
+      </span>
+    </span>
+  </div>
+
+  <%= submit_tag "Retirar distintivo" %>
+<% end %>

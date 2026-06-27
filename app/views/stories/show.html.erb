@@ -1,0 +1,196 @@
+<%# StoriesController#show renders show or _missing if story.can_be_seen_by_user %>
+<% if @story.is_gone? %>
+  <%= render partial: 'stories/missing', locals: { story: @story, moderation: @moderation } %>
+  <hr class="mod">
+  <p>Vista completa para quien la envió y los moderadores:</p>
+<% end %>
+
+<ol class="stories">
+  <%= render :partial => "stories/singledetail", :locals => { merged_stories: @merged_stories } %>
+</ol>
+
+<div class="story_content">
+  <% if @story.markeddown_description.present? && @story.stories_count == 0 %>
+    <div class="story_text">
+      <%= raw @story.markeddown_description %>
+    </div>
+  <% end %>
+
+  <% if @story.is_unavailable %>
+    <% StoryText.cached?(@story) do |text| %>
+      <details>
+        <summary>La URL de origen se considera no disponible desde <%= how_long_ago_label(@story.unavailable_at) %>; haz clic para ver el texto cacheado; consulta también los enlaces de archivo de arriba</summary>
+
+        <p>
+          <em>Todo el contenido de la publicación es propiedad de su respectivo titular.</em>
+        </p>
+
+        <div class="story_text">
+          <blockquote>
+            <%= simple_format(text) %>
+          </blockquote>
+        </div>
+      </details>
+
+    <% end %>
+  <% end %>
+
+  <% if @story.is_hidden_by_cur_user %>
+    <div id="hide-alert">
+      Has <a href="/about#story-hiding">ocultado esta</a> publicación.
+      No se te notificarán las respuestas ni las @menciones.
+      Los enlaces a esta publicación y a sus comentarios no se te mostrarán en el resto del sitio.
+      Puedes
+      <%= form_with :class => "hider", url: story_unhide_path(@story.short_id) do |form| %>
+        <%= form.submit "mostrarla", :class => "btn-link" %>
+      <% end %>
+      para que vuelvan a ser visibles.
+    </div>
+  <% end %>
+
+  <% if (matched_filtered_tags = @story.tags & filtered_tags).any? %>
+    Esta publicación tiene <%= matched_filtered_tags.count > 1 ? "etiquetas" : "una etiqueta" %> que has filtrado.
+    Los enlaces a esta publicación y a sus comentarios no se te mostrarán en el resto del sitio.
+    Puedes <%= link_to "dejar de filtrar", filters_path %> para que vuelvan a ser visibles.
+  <% end %>
+</div>
+
+<% if @user&.is_moderator? %>
+  <p>
+    Usuarios que ocultan esta publicación:
+    <% if @story.hidings.count == 0 %>(ninguno)<% end %>
+    <% @story.hidings.each do |hiding| %>
+      <%= styled_user_link(hiding.user) %>
+    <% end %>
+  </p>
+
+  <% older_log, recent_log = Moderation.for_story(@story).partition { it.created_at.before? 3.months.ago } %>
+  <% if recent_log.count > 0 %>
+    <label>Registro de moderación reciente de quien la envió, esta publicación y sus comentarios</label>
+    <%= render partial: 'moderations/table', locals: { moderations: recent_log } %>
+  <% else %>
+    <label>No hay entradas recientes en el registro de moderación</label>
+  <% end %>
+  <details>
+    <summary><%= older_log.count %> más antiguas</summary>
+    <%= render partial: 'moderations/table', locals: { moderations: older_log } %>
+  </details>
+<% end %>
+
+<% if !@story.previewing %>
+  <% @merged_stories.select { it.can_be_seen_by_user?(@user) }.each do |ms| %>
+    <% if @story.stories_count > 0 %>
+      <ol class="stories">
+        <li class="story">
+          <div class="story_liner h-entry">
+            <div class="voters">
+              <span class="merge"></span>
+            </div>
+            <div class="details" id="<%= ms.comments_anchor %>">
+              <span role="heading" aria-level="2" class="link h-cite u-repost-of">
+                <% if ms.can_be_seen_by_user?(@user) %>
+                  <a class="u-url" href="<%= Routes.url_or_comments_path(ms) %>" rel="ugc <%= ms.send_referrer? ? '' : 'noreferrer' %>"><%= ms.title %></a>
+                <% end %>
+                <% if ms.is_gone? %>
+                  [Publicación eliminada por <%= ms.is_moderated? ? "un moderador" : "quien la envió" %>]
+                <% end %>
+              </span>
+
+              <span class="byline">
+                <span>&nbsp;</span>
+                <%= inline_avatar_for @user, ms.user %>
+                <%= styled_user_link ms.user, ms, class: ['u-author', 'h-card'] %> <%= you_invited you: @user, user: ms.user %>
+
+                <% if ms.url.present? && (!ms.is_gone? || @user.try(:is_moderator?)) %>
+                  <%= divider_tag %>
+                  <details class="caches" name="caches">
+                    <summary>cachés</summary>
+                    <ul>
+                      <li><a href="<%= ms.archiveorg_url %>">Archive.org</a></li>
+                      <li><a href="<%= ms.ghost_url %>">Ghostarchive</a></li>
+                    </ul>
+                  </details>
+                <% end %>
+
+                <%= divider_tag %>
+                <a href="#comments-<%= ms.short_id %>">
+                  <% if ms.comments_count == 0 %>
+                    sin comentarios
+                  <% else %>
+                    <%= ms.comments_count %> <%= ms.comments_count == 1 ? 'comentario' : 'comentarios' %>
+                  <% end %>
+                </a>
+              </span>
+            </div>
+          </div>
+        </li>
+      </ol>
+
+      <div class="story_content">
+        <% if ms.markeddown_description.present? %>
+          <div class="story_text">
+          <%= raw ms.markeddown_description %>
+          </div>
+        <% end %>
+
+        <% if ms.is_unavailable %>
+          <% StoryText.cached?(ms) do |text| %>
+            <details>
+              <summary>La URL de origen se considera no disponible desde <%= how_long_ago_label(ms.unavailable_at) %>; haz clic para ver el texto cacheado; consulta también los enlaces de archivo de arriba</summary>
+
+              <p>
+              <em>Todo el contenido de la publicación es propiedad de su respectivo titular.</em>
+              </p>
+
+              <div class="story_text">
+                <blockquote>
+                  <%= simple_format(text) %>
+                </blockquote>
+              </div>
+            </details>
+
+          <% end %>
+        <% end %>
+      </div>
+    <% end %>
+
+    <ol class="comments comments1">
+      <%# deliberately checking the top-level story, either all have comment forms or none do, less confusing %>
+      <% if ms.accepting_comments? %>
+        <li class="comments_subtree"><%= render partial: "comments/commentbox", locals: { comment: ms.comments.build, story: ms } %></li>
+      <% end %>
+
+      <li class="comments_subtree" id="<%= "comments-#{ms.short_id}" %>">
+        <% if @user && @comments.size > 0 %>
+          <div class="thread_summary">
+            <%= pluralize(@comments.select { it.story_id == ms.id }.size, "comentario") %>,
+            <% unread = @ribbon.unread_count(@comments.select { it.story_id == ms.id }) %>
+            <% if @ribbon.new_record? %>
+              todos sin leer
+            <% elsif unread > 0 %>
+              <span role='link' class='comment_unread'><%= unread %> sin leer</span>
+            <% else %>
+              0 sin leer
+            <% end %>
+          </div>
+        <% end %>
+
+        <%= render partial: 'comments/threads', locals: {
+          thread: @comments.select { it.story_id == ms.id },
+          story: ms,
+          ribbon: @ribbon,
+          read_by_notifications: @read_by_notifications,
+        } %>
+      </li>
+
+    </ol>
+    <br>
+  <% end %>
+
+  <% if @story.public_similar_stories(@user).length > 0 %>
+    <div class="box wide">
+      <h4>Publicaciones con enlaces similares:</h4>
+      <%= render partial: "stories/similar", locals: { similar: @story.public_similar_stories(@user) } %>
+    </div>
+  <% end %>
+<% end %>

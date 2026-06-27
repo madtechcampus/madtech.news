@@ -1,0 +1,47 @@
+<%# locals: (allow_images: false) -%>
+<details class="markdown_help">
+  <summary>Formato Markdown disponible</summary>
+  <table>
+  <tr>
+    <td width="125"><em>texto en cursiva</em></td>
+    <td>rodea el texto con <tt>*asteriscos*</tt></td>
+  </tr>
+  <tr>
+    <td><strong>texto en negrita</strong></td>
+    <td>rodea el texto con <tt>**dos asteriscos**</tt></td>
+  </tr>
+  <tr>
+    <td><strike>texto tachado</strike></td>
+    <td>rodea el texto con <tt>~~dos tildes~~</tt></td>
+  </tr>
+  <tr>
+    <td><tt>ancho fijo</tt></td>
+    <td>rodea el texto con <tt>`comillas invertidas`</tt></td>
+  </tr>
+  <tr>
+    <td><a href="http://example.com/"
+      style="color: inherit;">texto enlazado</a></td>
+    <td><tt>[texto enlazado](http://example.com/)</tt> o simplemente una URL
+      a secas para crearlo sin título</td>
+  </tr>
+  <tr>
+    <td><blockquote> texto citado</blockquote></td>
+    <td>antepón al texto <tt>&gt;</tt></td>
+  </tr>
+  <tr>
+    <td><pre style="margin: 0px;">texto
+  preformateado</pre></td>
+    <td>antepón al texto al menos<tt>&nbsp;&nbsp;&nbsp;&nbsp;4 espacios</tt></td>
+  </tr>
+  <tr>
+    <td>@ o ~</td>
+    <td>Menciona a usuarios anteponiendo a su nombre de usuario una @ o una tilde</td>
+  </tr>
+  <% if allow_images %>
+    <tr>
+      <td>(imagen en línea)</td>
+      <td><tt>![texto alternativo](http://example.com/image.jpg)</tt></td>
+    </tr>
+  <% end %>
+  </table>
+</details>

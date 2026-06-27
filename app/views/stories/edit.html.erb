@@ -1,0 +1,23 @@
+<div class="box" id="story_box">
+  <div id="story_holder">
+    <%= form_with model: @story, id: 'edit_story' do |f| %>
+      <%= render :partial => "stories/form", :locals => { :story => @story, :f => f } %>
+
+      <div class="box">
+        <div class="boxline actions">
+          <%= f.submit "Guardar" %>
+
+          <% if @story.is_gone? && @story.is_undeletable_by_user?(@user) %>
+            &nbsp; | &nbsp;
+            <%= f.submit "Restaurar", formaction: story_undelete_path(@story.short_id),
+              :data => { :confirm => "¿Restaurar esta publicación?" } %>
+          <% elsif !@story.is_gone? %>
+            &nbsp; | &nbsp;
+            <%= f.submit "Borrar", formaction: story_destroy_path(@story.short_id),
+              :class => "deletion", :data => { :confirm => "¿Borrar esta publicación?" } %>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>
